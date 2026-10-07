@@ -25,7 +25,7 @@
         header { background-color: var(--dark-gray); padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bordeaux); position: sticky; top: 0; z-index: 100; }
         .logo { font-size: 28px; font-weight: 700; color: var(--bordeaux-light); font-family: serif; font-style: italic; display: flex; align-items: center; gap: 10px;}
         .logo span { font-family: 'Poppins', sans-serif; font-style: normal; font-size: 22px; color: var(--text-light); }
-        nav gap { display: flex; gap: 20px; }
+         gap { display: flex; gap: 20px; }
         nav a { color: var(--text-light); text-decoration: none; font-weight: 600; transition: color 0.3s; cursor: pointer; margin-left: 15px;}
         nav a:hover { color: var(--bordeaux-light); }
 
@@ -84,9 +84,33 @@
             <a href="#chi-siamo">Chi Siamo</a>
             <a href="#tariffe">Tariffe</a>
             <a href="#prenota" class="btn" style="padding: 8px 15px;">Prenota ora</a>
+            <a href="#" onclick="showAdminLogin()" style="font-size: 12px; color: var(--bordeaux-light);">Area Tutor</a>
         </nav>
     </header>
+    
+    <!-- AREA TUTOR (ADMIN) -->
+<div id="admin-section" class="form-container hidden" style="border: 2px solid var(--bordeaux-light);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="color: var(--bordeaux-light); margin:0;">Dashboard Tutor</h3>
+        <button class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="logoutAdmin()">Chiudi</button>
+    </div>
+    
+    <div id="admin-login-area">
+        <div class="form-group">
+            <label>Password Tutor</label>
+            <input type="password" id="admin-pass" placeholder="Inserisci password admin">
+        </div>
+        <button class="btn" style="width: 100%;" onclick="loginAdmin()">Accedi al Calendario</button>
+    </div>
 
+    <div id="admin-dashboard" class="hidden">
+        <p class="text-muted">Ecco le prenotazioni ricevute (salvate in locale):</p>
+        <div id="bookings-list" style="margin-top: 15px; text-align: left;">
+            <!-- Le prenotazioni appariranno qui -->
+        </div>
+        <button class="btn btn-outline" style="width: 100%; margin-top: 20px; border-color: red; color: red;" onclick="clearBookings()">Cancella tutto</button>
+    </div>
+</div>
     <section class="hero">
         <h1>Il tuo successo in <span>Matematica e Fisica</span></h1>
         <p>Due studenti, tre percorsi, una sola missione: aiutarti a raggiungere i tuoi obiettivi.</p>
@@ -430,6 +454,83 @@
             document.getElementById('booking-result').classList.remove('hidden');
 
             // Qui in futuro puoi inviare i dati ad un database reale (es. Firebase o SheetDB) per aggiornare il TUO calendario personale.
+            // Aggiungi questo pezzo ALLA FINE della funzione submitBooking() esistente, 
+            // subito prima della parentesi graffa di chiusura "}" :
+
+            const nuovaPrenotazione = {
+            studente: currentUser.name,
+            telefono: currentUser.phone,
+            materia: subject,
+            data: dateStr,
+            ora: timeStr,
+            oreTotali: hours,
+            luogo: location,
+            tutor: tutorAssegnato,
+            timestamp: new Date().getTime()
+            };
+
+            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
+            bookings.push(nuovaPrenotazione);
+            localStorage.setItem('zetaBookings', JSON.stringify(bookings));
+        }
+        // --- LOGICA AREA TUTOR ---
+        const ADMIN_PASS = "Zeta2024"; // Puoi cambiare la password qui
+
+        function showAdminLogin() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('booking-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.remove('hidden');
+        }
+
+        function loginAdmin() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === ADMIN_PASS) {
+                document.getElementById('admin-login-area').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+                renderBookings();
+            } else {
+                alert("Password errata!");
+            }
+        }
+
+        function renderBookings() {
+            const list = document.getElementById('bookings-list');
+            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
+            
+            if(bookings.length === 0) {
+                list.innerHTML = "<p style='color: var(--text-muted);'>Nessuna prenotazione al momento.</p>";
+                return;
+            }
+
+            // Ordina le prenotazioni dalla più recente
+            bookings.sort((a, b) => new Date(a.data + "T" + a.ora) - new Date(b.data + "T" + b.ora));
+
+            let html = "";
+            bookings.forEach(b => {
+                html += `
+                <div style="background: var(--black); padding: 15px; margin-bottom: 10px; border-left: 3px solid var(--bordeaux); border-radius: 5px; text-align: left;">
+                    <strong style="color: white; font-size: 18px;">${b.data} ore ${b.ora}</strong> - ${b.materia} (${b.oreTotali}h)<br>
+                    <span style="color: var(--bordeaux-light);">Tutor assegnato: ${b.tutor}</span><br>
+                    <span style="color: var(--text-muted);">Studente: ${b.studente} (${b.telefono})<br>
+                    Luogo: ${b.luogo}</span>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function logoutAdmin() {
+            document.getElementById('admin-pass').value = '';
+            document.getElementById('admin-section').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('admin-login-area').classList.remove('hidden');
+            document.getElementById('auth-section').classList.remove('hidden');
+        }
+
+        function clearBookings() {
+            if(confirm("Sei sicuro di voler cancellare TUTTE le prenotazioni?")) {
+                localStorage.removeItem('zetaBookings');
+                renderBookings();
+            }
         }
     </script>
 </body>
