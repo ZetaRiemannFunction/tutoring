@@ -172,31 +172,30 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxocGRheHdrbWRnZWtxc2NmY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjgxNDIsImV4cCI6MjEwNjk0NDE0Mn0.02iLZCaOTSDSvr0DXZ3Tvb5KPEvYS8tNLg52N7iKcAM";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Password codificata in memoria: ZetaTutoring2026!Pisa
-    const SECRET_KEY = [90, 101, 116, 97, 84, 117, 116, 111, 114, 105, 110, 103, 50, 48, 50, 54, 33, 80, 105, 115, 97];
+    // Password nascosta nel codice (corrisponde a: ZetaTutoring2026!Pisa)
+    const CHIAVE_SEGRETA = "WmV0YVR1dG9yaW5nMjAyNiFQaXNh";
 
     function verificaPassword() {
         const input = document.getElementById('admin-pass').value.trim();
-        
-        let corretta = true;
-        if (input.length !== SECRET_KEY.length) {
-            corretta = false;
-        } else {
-            for (let i = 0; i < input.length; i++) {
-                if (input.charCodeAt(i) !== SECRET_KEY[i]) {
-                    corretta = false;
-                    break;
-                }
-            }
-        }
 
-        if (corretta) {
-            sessionStorage.setItem('zeta_admin_auth', 'true');
-            sbloccaDashboard();
-        } else {
-            document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('admin-pass').value = '';
+        try {
+            // Converte ciò che digiti e lo confronta
+            if (btoa(input) === CHIAVE_SEGRETA) {
+                sessionStorage.setItem('zeta_admin_auth', 'true');
+                sbloccaDashboard();
+            } else {
+                mostraErrore();
+            }
+        } catch (e) {
+            mostraErrore();
         }
+    }
+
+    function mostraErrore() {
+        const errorEl = document.getElementById('error-msg');
+        errorEl.innerText = "Password errata! Attenzione alle maiuscole/minuscole.";
+        errorEl.style.display = 'block';
+        document.getElementById('admin-pass').value = '';
     }
 
     function sbloccaDashboard() {
@@ -332,6 +331,6 @@
             tbody.appendChild(tr);
         });
     }
-</script>
+</script>    
 </body>
 </html>
