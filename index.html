@@ -549,281 +549,280 @@
     </footer>
 
     <!-- JAVASCRIPT LOGIC -->
-    <script>
-        let currentUser = null;
-        let selectedSlots = []; // Memorizza liberamente le slot selezionate
-
-        // Disponibilità Orarie Dinamiche
-        function getTutorSlots(teacher, dateObj) {
-            const day = dateObj.getDay(); // 0 = Dom, 1 = Lun, 2 = Mar, 3 = Mer, 4 = Gio, 5 = Ven, 6 = Sab
-            
-            // Yuri: Tutti i giorni compresi Sabato e Domenica 10:00 - 20:00
-            if (teacher === "Yuri Santoro") {
-                return ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
-            }
-
-            // Elia: Disponibilità per giorno specifico
-            if (teacher === "Elia Masini Martelli") {
-                switch(day) {
-                    case 1: // Lunedì: 10:00 - 16:00
-                    case 3: // Mercoledì: 10:00 - 16:00
-                        return ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
-                    case 2: // Martedì: 13:00 - 20:00
-                        return ["13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
-                    case 4: // Giovedì: 11:00 - 20:00
-                        return ["11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
-                    case 5: // Venerdì: 11:00 - 16:00
-                        return ["11:00", "12:00", "13:00", "14:00", "15:00"];
-                    default: // Sabato e Domenica non disponibile
-                        return [];
-                }
-            }
-            return [];
-        }
-
-        function toggleSchoolType() {
-            const school = document.getElementById('user-school').value;
-            const typeGroup = document.getElementById('school-type-group');
-            if (school === 'superiore') {
-                typeGroup.classList.remove('hidden');
-            } else {
-                typeGroup.classList.add('hidden');
-            }
-        }
-
-        // ACCESSO STUDENTE
-        function handleLogin() {
-            const phone = document.getElementById('user-phone').value.trim();
-
-            if (!phone) {
-                alert("Inserisci il tuo numero di telefono per accedere.");
-                return;
-            }
-
-            let users = JSON.parse(localStorage.getItem('zetaUsers')) || {};
-
-            if (users[phone]) {
-                currentUser = users[phone];
-                showBookingForm();
-            } else {
-                const regFields = document.getElementById('register-fields');
-                if (regFields.classList.contains('hidden')) {
-                    regFields.classList.remove('hidden');
-                    alert("Primo accesso rilevato! Compila il tuo profilo per continuare.");
-                } else {
-                    const name = document.getElementById('user-name').value.trim();
-                    const school = document.getElementById('user-school').value;
-                    const type = school === 'superiore' ? document.getElementById('user-type').value : 'altro';
-                    const year = document.getElementById('user-year').value;
-
-                    if (!name) {
-                        alert("Inserisci il tuo Nome e Cognome.");
-                        return;
-                    }
-
-                    currentUser = { phone, name, school, type, year };
-                    users[phone] = currentUser;
-                    localStorage.setItem('zetaUsers', JSON.stringify(users));
-                    showBookingForm();
-                }
-            }
-        }
-
-        function showBookingForm() {
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('booking-section').classList.remove('hidden');
-
-            document.getElementById('welcome-msg').innerText = `Ciao, ${currentUser.name}!`;
-            document.getElementById('user-summary').innerText = `Tel: ${currentUser.phone} | Indirizzo: ${currentUser.type === 'scientifico' ? 'Liceo Scientifico' : 'Standard'}`;
-
-            resetSlotSelection();
-            renderCalendar();
-        }
-
-        function logout() {
-            currentUser = null;
-            selectedSlots = [];
-            document.getElementById('user-phone').value = '';
-            document.getElementById('register-fields').classList.add('hidden');
-            document.getElementById('booking-section').classList.add('hidden');
-            document.getElementById('auth-section').classList.remove('hidden');
-            document.getElementById('booking-result').classList.add('hidden');
-        }
-
-        // AZZERAMENTO SELEZIONE
-        function resetSlotSelection() {
-            selectedSlots = [];
-            document.querySelectorAll('.slot.selected').forEach(el => el.classList.remove('selected'));
-            updatePriceEstimate();
-        }
-
-        // CLIC SULLO SLOT (SELEZIONE/DESELEZIONE LIBERA)
-        function selectSlot(dateStr, timeStr, element) {
-            const slotId = `${dateStr}_${timeStr}`;
-            const index = selectedSlots.findIndex(s => s.id === slotId);
-
-            if (index > -1) {
-                // Deseleziona se già cliccato
-                selectedSlots.splice(index, 1);
-                element.classList.remove('selected');
-            } else {
-                // Aggiungi selezione liberamente
-                selectedSlots.push({ id: slotId, data: dateStr, ora: timeStr });
-                element.classList.add('selected');
-            }
-
-            updatePriceEstimate();
-        }
-
-        // RENDERING CALENDARIO
-        function renderCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            calendarEl.innerHTML = '';
-            
-            const selectedTeacher = document.querySelector('input[name="teacher"]:checked').value;
-            const bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-            const today = new Date();
-
-            for (let i = 0; i < 21; i++) {
-                const currentDate = new Date(today);
-                currentDate.setDate(today.getDate() + i);
-                
-                const dateString = currentDate.toISOString().split('T')[0];
-                const dayName = currentDate.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' });
-
-                const dayCol = document.createElement('div');
-                dayCol.className = 'day-column';
-                dayCol.innerHTML = `<div class="day-header">${dayName}</div>`;
-
-                const timeSlots = getTutorSlots(selectedTeacher, currentDate);
-
-                if (timeSlots.length === 0) {
-                    const noSlotDiv = document.createElement('div');
-                    noSlotDiv.style.cssText = "font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;";
-                    noSlotDiv.innerText = "Non disponibile";
-                    dayCol.appendChild(noSlotDiv);
-                } else {
-                    timeSlots.forEach(time => {
-                        const isBooked = bookings.some(b => b.tutor === selectedTeacher && b.data === dateString && b.ora === time);
-                        const slotDiv = document.createElement('div');
-                        const slotId = `${dateString}_${time}`;
-                        
-                        if (isBooked) {
-                            slotDiv.className = 'slot occupied';
-                            slotDiv.innerText = `${time} - Occupato`;
-                        } else {
-                            slotDiv.className = 'slot free';
-                            slotDiv.innerText = `${time} - Libero`;
-                            
-                            if (selectedSlots.some(s => s.id === slotId)) {
-                                slotDiv.classList.add('selected');
-                            }
-
-                            slotDiv.onclick = () => selectSlot(dateString, time, slotDiv);
-                        }
-                        dayCol.appendChild(slotDiv);
-                    });
-                }
-
-                calendarEl.appendChild(dayCol);
-            }
-        }
-
-        // CALCOLO PREVENTIVO E SCONTI IN TEMPO REALE
-        function updatePriceEstimate() {
-            if (!currentUser) return;
-
-            const numLezioni = selectedSlots.length;
-            const tipoLezione = document.getElementById('book-type').value;
-            const tipoScuola = currentUser.type;
-
-            let costoOrario = 20;
-
-            if (tipoLezione === 'gruppo') {
-                costoOrario = 18;
-            } else if (tipoScuola === 'scientifico') {
-                costoOrario = 25;
-            } else {
-                costoOrario = 20;
-            }
-
-            let totale = costoOrario * numLezioni;
-            let scontoMsg = "Tariffa Standard";
-
-            // Sconti automatici superate le soglie
-            if (numLezioni >= 20) {
-                totale = 20 * 0.80 * costoOrario + (numLezioni-20)* costoOrario; // 20% di sconto
-                scontoMsg = "Sconto 20% Applicato! 🎉";
-            } else if (numLezioni >= 10) {
-                totale = 10 * 0.90 * costoOrario + (numLezioni-10)* costoOrario; // 10% di sconto
-                scontoMsg = "Sconto 10% Applicato! 🎉";
-            } else if (numLezioni >= 15) {
-                totale = 15 * 0.85 * costoOrario + (numLezioni-15)* costoOrario; // 15% di sconto
-                scontoMsg = "Sconto 15% Applicato! 🎉";
-            } else if (numLezioni > 0) {
-                scontoMsg = "Tariffa Standard";
-            } else {
-                scontoMsg = "Nessuna lezione selezionata";
-            }
-
-            // Aggiorna testo contatore
-            const counterEl = document.getElementById('package-counter');
-            if (counterEl) {
-                counterEl.innerText = `${numLezioni} ${numLezioni === 1 ? 'lezione selezionata' : 'lezioni selezionate'}`;
-            }
-
-            // Aggiorna badge sconto
-            const badgeEl = document.getElementById('discount-badge');
-            if (badgeEl) {
-                badgeEl.innerText = scontoMsg;
-                badgeEl.style.color = numLezioni >= 10 ? '#22c55e' : 'var(--text-muted)';
-            }
-
-            // Aggiorna preventivo totale
-            document.getElementById('price-estimate').innerText = `${totale.toFixed(2)} €`;
-        }
-
-        // INVIO PRENOTAZIONE
-        async function submitBooking() {
-            if (selectedSlots.length === 0) {
-                alert("Seleziona almeno una lezione dal calendario prima di proseguire.");
-                return;
-            }
-
-            const location = document.getElementById('book-location').value;
-            const subject = document.getElementById('book-subject').value;
-            const lessonType = document.getElementById('book-type').value;
-            const tutor = document.querySelector('input[name="teacher"]:checked').value;
-
-            // Preparazione oggetti da inviare a Supabase
-            const nuovePrenotazioni = selectedSlots.map(slot => ({
-                studente: currentUser.name,
-                telefono: currentUser.phone,
-                materia: subject,
-                data: slot.data,
-                ora: slot.ora,
-                luogo: location === 'online' ? 'Online (Meet)' : 'Presenza (Via Giusti 18, Pisa)',
-                tutor: tutor,
-                tipo_scuola: currentUser.type
-            }));
-
-            // Salvataggio nel Cloud
-            const { data, error } = await supabaseClient
-                .from('prenotazioni')
-                .insert(nuovePrenotazioni);
-
-            if (error) {
-                alert("Errore nel salvataggio online: " + error.message);
-                return;
-            }
-
-    alert("Prenotazione salvata con successo!");
-    resetSlotSelection();
-    renderCalendar();
-}
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // 1. INIZIALIZZAZIONE SUPABASE IN ALTO
     const SUPABASE_URL = "https://lhpdaxwkmdgekqscfcaa.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxocGRheHdrbWRnZWtxc2NmY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjgxNDIsImV4cCI6MjEwNjk0NDE0Mn0.02iLZCaOTSDSvr0DXZ3Tvb5KPEvYS8tNLg52N7iKcAM";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    </script>
+
+    let currentUser = null;
+    let selectedSlots = [];
+
+    // Disponibilità Orarie Dinamiche
+    function getTutorSlots(teacher, dateObj) {
+        const day = dateObj.getDay();
+        
+        if (teacher === "Yuri Santoro") {
+            return ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+        }
+
+        if (teacher === "Elia Masini Martelli") {
+            switch(day) {
+                case 1: case 3:
+                    return ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
+                case 2:
+                    return ["13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+                case 4:
+                    return ["11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+                case 5:
+                    return ["11:00", "12:00", "13:00", "14:00", "15:00"];
+                default:
+                    return [];
+            }
+        }
+        return [];
+    }
+
+    function toggleSchoolType() {
+        const school = document.getElementById('user-school').value;
+        const typeGroup = document.getElementById('school-type-group');
+        if (school === 'superiore') {
+            typeGroup.classList.remove('hidden');
+        } else {
+            typeGroup.classList.add('hidden');
+        }
+    }
+
+    // ACCESSO STUDENTE
+    function handleLogin() {
+        const phone = document.getElementById('user-phone').value.trim();
+
+        if (!phone) {
+            alert("Inserisci il tuo numero di telefono per accedere.");
+            return;
+        }
+
+        let users = JSON.parse(localStorage.getItem('zetaUsers')) || {};
+
+        if (users[phone]) {
+            currentUser = users[phone];
+            showBookingForm();
+        } else {
+            const regFields = document.getElementById('register-fields');
+            if (regFields.classList.contains('hidden')) {
+                regFields.classList.remove('hidden');
+                alert("Primo accesso rilevato! Compila il tuo profilo per continuare.");
+            } else {
+                const name = document.getElementById('user-name').value.trim();
+                const school = document.getElementById('user-school').value;
+                const type = school === 'superiore' ? document.getElementById('user-type').value : 'altro';
+                const year = document.getElementById('user-year').value;
+
+                if (!name) {
+                    alert("Inserisci il tuo Nome e Cognome.");
+                    return;
+                }
+
+                currentUser = { phone, name, school, type, year };
+                users[phone] = currentUser;
+                localStorage.setItem('zetaUsers', JSON.stringify(users));
+                showBookingForm();
+            }
+        }
+    }
+
+    function showBookingForm() {
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('booking-section').classList.remove('hidden');
+
+        document.getElementById('welcome-msg').innerText = `Ciao, ${currentUser.name}!`;
+        document.getElementById('user-summary').innerText = `Tel: ${currentUser.phone} | Indirizzo: ${currentUser.type === 'scientifico' ? 'Liceo Scientifico' : 'Standard'}`;
+
+        resetSlotSelection();
+        renderCalendar();
+    }
+
+    function logout() {
+        currentUser = null;
+        selectedSlots = [];
+        document.getElementById('user-phone').value = '';
+        document.getElementById('register-fields').classList.add('hidden');
+        document.getElementById('booking-section').classList.add('hidden');
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('booking-result').classList.add('hidden');
+    }
+
+    function resetSlotSelection() {
+        selectedSlots = [];
+        document.querySelectorAll('.slot.selected').forEach(el => el.classList.remove('selected'));
+        updatePriceEstimate();
+    }
+
+    function selectSlot(dateStr, timeStr, element) {
+        const slotId = `${dateStr}_${timeStr}`;
+        const index = selectedSlots.findIndex(s => s.id === slotId);
+
+        if (index > -1) {
+            selectedSlots.splice(index, 1);
+            element.classList.remove('selected');
+        } else {
+            selectedSlots.push({ id: slotId, data: dateStr, ora: timeStr });
+            element.classList.add('selected');
+        }
+
+        updatePriceEstimate();
+    }
+
+    // 2. RENDERING CALENDARIO CON DATI DA SUPABASE (ASYNC)
+    async function renderCalendar() {
+        const calendarEl = document.getElementById('calendar');
+        calendarEl.innerHTML = '<p style="text-align:center; width:100%; color: var(--text-muted);">Caricamento disponibilità...</p>';
+        
+        const selectedTeacher = document.querySelector('input[name="teacher"]:checked').value;
+
+        // Recupero prenotazioni da Supabase
+        const { data: bookings, error } = await supabaseClient
+            .from('prenotazioni')
+            .select('data, ora, tutor');
+
+        if (error) {
+            console.error("Errore nel recupero delle prenotazioni:", error.message);
+        }
+
+        const listaBookings = bookings || [];
+        calendarEl.innerHTML = '';
+        const today = new Date();
+
+        for (let i = 0; i < 21; i++) {
+            const currentDate = new Date(today);
+            currentDate.setDate(today.getDate() + i);
+            
+            const dateString = currentDate.toISOString().split('T')[0];
+            const dayName = currentDate.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' });
+
+            const dayCol = document.createElement('div');
+            dayCol.className = 'day-column';
+            dayCol.innerHTML = `<div class="day-header">${dayName}</div>`;
+
+            const timeSlots = getTutorSlots(selectedTeacher, currentDate);
+
+            if (timeSlots.length === 0) {
+                const noSlotDiv = document.createElement('div');
+                noSlotDiv.style.cssText = "font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 10px;";
+                noSlotDiv.innerText = "Non disponibile";
+                dayCol.appendChild(noSlotDiv);
+            } else {
+                timeSlots.forEach(time => {
+                    const isBooked = listaBookings.some(b => b.tutor === selectedTeacher && b.data === dateString && b.ora === time);
+                    const slotDiv = document.createElement('div');
+                    const slotId = `${dateString}_${time}`;
+                    
+                    if (isBooked) {
+                        slotDiv.className = 'slot occupied';
+                        slotDiv.innerText = `${time} - Occupato`;
+                    } else {
+                        slotDiv.className = 'slot free';
+                        slotDiv.innerText = `${time} - Libero`;
+                        
+                        if (selectedSlots.some(s => s.id === slotId)) {
+                            slotDiv.classList.add('selected');
+                        }
+
+                        slotDiv.onclick = () => selectSlot(dateString, time, slotDiv);
+                    }
+                    dayCol.appendChild(slotDiv);
+                });
+            }
+
+            calendarEl.appendChild(dayCol);
+        }
+    }
+
+    function updatePriceEstimate() {
+        if (!currentUser) return;
+
+        const numLezioni = selectedSlots.length;
+        const tipoLezione = document.getElementById('book-type').value;
+        const tipoScuola = currentUser.type;
+
+        let costoOrario = 20;
+
+        if (tipoLezione === 'gruppo') {
+            costoOrario = 18;
+        } else if (tipoScuola === 'scientifico') {
+            costoOrario = 25;
+        } else {
+            costoOrario = 20;
+        }
+
+        let totale = costoOrario * numLezioni;
+        let scontoMsg = "Tariffa Standard";
+
+        if (numLezioni >= 20) {
+            totale = 20 * 0.80 * costoOrario + (numLezioni - 20) * costoOrario;
+            scontoMsg = "Sconto 20% Applicato! 🎉";
+        } else if (numLezioni >= 15) {
+            totale = 15 * 0.85 * costoOrario + (numLezioni - 15) * costoOrario;
+            scontoMsg = "Sconto 15% Applicato! 🎉";
+        } else if (numLezioni >= 10) {
+            totale = 10 * 0.90 * costoOrario + (numLezioni - 10) * costoOrario;
+            scontoMsg = "Sconto 10% Applicato! 🎉";
+        } else if (numLezioni > 0) {
+            scontoMsg = "Tariffa Standard";
+        } else {
+            scontoMsg = "Nessuna lezione selezionata";
+        }
+
+        const counterEl = document.getElementById('package-counter');
+        if (counterEl) {
+            counterEl.innerText = `${numLezioni} ${numLezioni === 1 ? 'lezione selezionata' : 'lezioni selezionate'}`;
+        }
+
+        const badgeEl = document.getElementById('discount-badge');
+        if (badgeEl) {
+            badgeEl.innerText = scontoMsg;
+            badgeEl.style.color = numLezioni >= 10 ? '#22c55e' : 'var(--text-muted)';
+        }
+
+        document.getElementById('price-estimate').innerText = `${totale.toFixed(2)} €`;
+    }
+
+    // INVIO PRENOTAZIONE SU SUPABASE
+    async function submitBooking() {
+        if (selectedSlots.length === 0) {
+            alert("Seleziona almeno una lezione dal calendario prima di proseguire.");
+            return;
+        }
+
+        const location = document.getElementById('book-location').value;
+        const subject = document.getElementById('book-subject').value;
+        const tutor = document.querySelector('input[name="teacher"]:checked').value;
+
+        const nuovePrenotazioni = selectedSlots.map(slot => ({
+            studente: currentUser.name,
+            telefono: currentUser.phone,
+            materia: subject,
+            data: slot.data,
+            ora: slot.ora,
+            luogo: location === 'online' ? 'Online (Meet)' : 'Presenza (Via Giusti 18, Pisa)',
+            tutor: tutor,
+            tipo_scuola: currentUser.type
+        }));
+
+        const { data, error } = await supabaseClient
+            .from('prenotazioni')
+            .insert(nuovePrenotazioni);
+
+        if (error) {
+            alert("Errore nel salvataggio online: " + error.message);
+            return;
+        }
+
+        alert("Prenotazione salvata con successo!");
+        resetSlotSelection();
+        renderCalendar();
+    }
+</script>
 </body>
 </html>
