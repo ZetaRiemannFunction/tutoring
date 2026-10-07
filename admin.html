@@ -45,6 +45,7 @@
         .btn-danger { background: none; border: none; color: #e63946; cursor: pointer; font-size: 16px; }
         .btn-whatsapp { color: #25D366; text-decoration: none; font-weight: 500; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -102,14 +103,41 @@
 </div>
 
 <script>
+    const SUPABASE_URL = "https://lhpdaxwkmdgekqscfcaa.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxocGRheHdrbWRnZWtxc2NmY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjgxNDIsImV4cCI6MjEwNjk0NDE0Mn0.02iLZCaOTSDSvr0DXZ3Tvb5KPEvYS8tNLg52N7iKcAM";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     // Caricamento e ricalcolo automatico dei dati
-    function caricaDati() {
-        const bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-        const users = JSON.parse(localStorage.getItem('zetaUsers')) || {};
+    async function caricaDati() {
+            // Scarica tutte le prenotazioni da Supabase
+            const { data: bookings, error } = await supabaseClient
+                .from('prenotazioni')
+                .select('*');
 
-        renderContabilita(bookings, users);
-        renderPrenotazioni(bookings);
+            if (error) {
+                console.error("Errore caricamento dati:", error.message);
+                return;
+            }
+
+            renderContabilita(bookings);
+            renderPrenotazioni(bookings);
+        }
+
+        async function eliminaLezione(id) {
+            if (confirm("Vuoi cancellare questa lezione dal database?")) {
+                const { error } = await supabaseClient
+                    .from('prenotazioni')
+                    .delete()
+                    .eq('id', id);
+
+            if (error) {
+                alert("Errore nell'eliminazione: " + error.message);
+            } else {
+                caricaDati(); // Ricarica lezioni e saldi aggiornati
+            }
+        }
     }
+
+    window.onload = caricaDati;
 
     // CALCOLO DINAMICO DEL SALDO PER OGNI STUDENTE
     function renderContabilita(bookings, users) {
