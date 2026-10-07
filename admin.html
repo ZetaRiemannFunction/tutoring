@@ -106,55 +106,50 @@
     const SUPABASE_URL = "https://lhpdaxwkmdgekqscfcaa.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxocGRheHdrbWRnZWtxc2NmY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjgxNDIsImV4cCI6MjEwNjk0NDE0Mn0.02iLZCaOTSDSvr0DXZ3Tvb5KPEvYS8tNLg52N7iKcAM";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    // Caricamento e ricalcolo automatico dei dati
+
     async function caricaDati() {
-            // Scarica tutte le prenotazioni da Supabase
-            const { data: bookings, error } = await supabaseClient
-                .from('prenotazioni')
-                .select('*');
+        const { data: bookings, error } = await supabaseClient
+            .from('prenotazioni')
+            .select('*');
 
-            if (error) {
-                console.error("Errore caricamento dati:", error.message);
-                return;
-            }
-
-            renderContabilita(bookings);
-            renderPrenotazioni(bookings);
+        if (error) {
+            console.error("Errore caricamento dati:", error.message);
+            alert("Errore caricamento dati da Supabase: " + error.message);
+            return;
         }
 
-        async function eliminaLezione(id) {
-            if (confirm("Vuoi cancellare questa lezione dal database?")) {
-                const { error } = await supabaseClient
-                    .from('prenotazioni')
-                    .delete()
-                    .eq('id', id);
+        renderContabilita(bookings || []);
+        renderPrenotazioni(bookings || []);
+    }
+
+    async function eliminaLezione(id) {
+        if (confirm("Vuoi cancellare questa lezione dal database?")) {
+            const { error } = await supabaseClient
+                .from('prenotazioni')
+                .delete()
+                .eq('id', id);
 
             if (error) {
                 alert("Errore nell'eliminazione: " + error.message);
             } else {
-                caricaDati(); // Ricarica lezioni e saldi aggiornati
+                caricaDati();
             }
         }
     }
 
-    window.onload = caricaDati;
-
-    // CALCOLO DINAMICO DEL SALDO PER OGNI STUDENTE
-    function renderContabilita(bookings, users) {
+    function renderContabilita(bookings) {
         const tbody = document.getElementById('tbody-contabilita');
         tbody.innerHTML = '';
 
-        // Raggruppa le prenotazioni attive per numero di telefono dello studente
         const mappaStudenti = {};
 
         bookings.forEach(b => {
             const tel = b.telefono;
             if (!mappaStudenti[tel]) {
-                const infoUtente = users[tel] || {};
                 mappaStudenti[tel] = {
                     nome: b.studente,
                     telefono: tel,
-                    tipoScuola: infoUtente.type || 'altro',
+                    tipoScuola: b.tipo_scuola || 'altro',
                     lezioni: []
                 };
             }
@@ -172,11 +167,10 @@
             const studente = mappaStudenti[tel];
             const numLezioni = studente.lezioni.length;
 
-            // Determina la tariffa oraria base
             let costoOrario = 20;
             let tipoLabel = "Standard (20€/h)";
 
-            const haSoloGruppo = studente.lezioni.every(l => l.tipo === 'gruppo');
+            const haSoloGruppo = studente.lezioni.every(l => l.materia && l.materia.toLowerCase().includes('gruppo'));
             if (haSoloGruppo) {
                 costoOrario = 18;
                 tipoLabel = "Gruppo (18€/h)";
@@ -185,17 +179,18 @@
                 tipoLabel = "Scientifico (25€/h)";
             }
 
-            // Calcolo totale lordo
             let totale = costoOrario * numLezioni;
             let badgeSconto = `<span class="badge-standard">Tariffa Standard</span>`;
 
-            // Applicazione sconti dinamici su soglie orarie
             if (numLezioni >= 20) {
-                totale = totale * 0.80; // 20% sconto
+                totale = totale * 0.80;
                 badgeSconto = `<span class="badge-sconto">Sconto 20% (≥20 ore)</span>`;
+            } else if (numLezioni >= 15) {
+                totale = totale * 0.85;
+                badgeSconto = `<span class="badge-sconto">Sconto 15% (≥15 ore)</span>`;
             } else if (numLezioni >= 10) {
-                totale = totale * 0.85; // 15% sconto
-                badgeSconto = `<span class="badge-sconto">Sconto 15% (≥10 ore)</span>`;
+                totale = totale * 0.90;
+                badgeSconto = `<span class="badge-sconto">Sconto 10% (≥10 ore)</span>`;
             }
 
             const tr = document.createElement('tr');
@@ -211,7 +206,6 @@
         });
     }
 
-    // RENDERING TABELLA SINGOLE LEZIONI
     function renderPrenotazioni(bookings) {
         const tbody = document.getElementById('tbody-prenotazioni');
         tbody.innerHTML = '';
@@ -239,17 +233,6 @@
         });
     }
 
-    // ELIMINAZIONE LEZIONE E RICALCOLO AUTOMATICO
-    function eliminaLezione(id) {
-        if (confirm("Vuoi cancellare questa lezione? Il totale dovuto dallo studente verrà ricalcolato automaticamente.")) {
-            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-            bookings = bookings.filter(b => b.id !== id);
-            localStorage.setItem('zetaBookings', JSON.stringify(bookings));
-            caricaDati(); // Ricarica sia le lezioni che la contabilità
-        }
-    }
-
-    // Inizializzazione al caricamento della pagina
     window.onload = caricaDati;
 </script>
 </body>
