@@ -539,83 +539,6 @@
                 </a>
             </div>
         </div>
-
-        <div id="admin-anchor"></div>
-
-        <!-- AREA TUTOR (ADMIN CALENDAR DASHBOARD) -->
-        <div id="admin-section" class="form-container hidden" style="margin-top: 50px; border: 2px solid var(--bordeaux-light); max-width: 950px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3 style="color: var(--bordeaux-light); margin:0;"><i class="fa-solid fa-calendar-days"></i> Area Riservata Tutor</h3>
-                <button class="btn btn-outline" style="padding: 5px 12px; font-size: 12px;" onclick="closeAdminSection()">Chiudi</button>
-            </div>
-
-            <div id="admin-login-box">
-                <div class="form-group">
-                    <label>Password Tutor</label>
-                    <input type="password" id="admin-password" placeholder="Inserisci password admin">
-                </div>
-                <button class="btn" style="width: 100%;" onclick="checkAdminPassword()">Accedi al Gestionale</button>
-            </div>
-
-            <div id="admin-dashboard" class="hidden">
-                <p style="color: var(--text-muted); margin-bottom: 15px;">Gestisci e modifica tutte le lezioni prenotate dagli studenti:</p>
-                
-                <div style="overflow-x: auto;">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Data & Ora</th>
-                                <th>Materia</th>
-                                <th>Studente</th>
-                                <th>Telefono</th>
-                                <th>Sede</th>
-                                <th>Tutor</th>
-                                <th>Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-bookings-tbody">
-                            <!-- Popolato dinamicamente -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end;">
-                    <button class="btn btn-outline" style="border-color: #e63946; color: #e63946;" onclick="clearAllBookings()">Cancella Tutte le Prenotazioni</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODALE MODIFICA PRENOTAZIONE (AREA TUTOR) -->
-        <div id="edit-modal" class="form-container hidden" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; width: 90%; max-width: 500px; border: 2px solid var(--bordeaux-light); box-shadow: 0 0 30px rgba(0,0,0,0.9); background: var(--dark-gray);">
-            <h3 style="color: var(--bordeaux-light); margin-bottom: 15px;"><i class="fa-solid fa-pen-to-square"></i> Modifica Prenotazione</h3>
-            <input type="hidden" id="edit-booking-id">
-            <div class="form-group">
-                <label>Data Lezione</label>
-                <input type="date" id="edit-date">
-            </div>
-            <div class="form-group">
-                <label>Orario Inizio</label>
-                <input type="time" id="edit-time">
-            </div>
-            <div class="form-group">
-                <label>Materia</label>
-                <select id="edit-subject">
-                    <option value="Matematica">Matematica</option>
-                    <option value="Fisica">Fisica</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Tutor Assegnato</label>
-                <select id="edit-tutor">
-                    <option value="Elia Masini Martelli">Elia Masini Martelli</option>
-                    <option value="Yuri Santoro">Yuri Santoro</option>
-                </select>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn" onclick="saveBookingEdit()" style="flex: 1;">Salva</button>
-                <button class="btn btn-outline" onclick="closeEditModal()" style="flex: 1;">Annulla</button>
-            </div>
-        </div>
     </section>
 
     <!-- FOOTER -->
@@ -626,7 +549,6 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        const ADMIN_PASS = "531002"; 
         let currentUser = null;
         let selectedSlots = []; // Memorizza liberamente le slot selezionate
 
@@ -933,115 +855,6 @@
 
             resetSlotSelection();
             renderCalendar();
-        }
-
-        // --- AREA TUTOR (ADMIN) ---
-        function showAdminSection() {
-            document.getElementById('admin-section').classList.remove('hidden');
-            window.location.hash = "admin-anchor";
-        }
-
-        function closeAdminSection() {
-            document.getElementById('admin-section').classList.add('hidden');
-        }
-
-        function checkAdminPassword() {
-            const pass = document.getElementById('admin-password').value;
-            if (pass === ADMIN_PASS) {
-                document.getElementById('admin-login-box').classList.add('hidden');
-                document.getElementById('admin-dashboard').classList.remove('hidden');
-                renderAdminBookings();
-            } else {
-                alert("Password errata!");
-            }
-        }
-
-        function renderAdminBookings() {
-            const tbody = document.getElementById('admin-bookings-tbody');
-            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-
-            if (bookings.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">Nessuna prenotazione presente.</td></tr>`;
-                return;
-            }
-
-            bookings.sort((a, b) => new Date(a.data + "T" + a.ora) - new Date(b.data + "T" + b.ora));
-
-            let html = "";
-            bookings.forEach(b => {
-                html += `
-                <tr>
-                    <td><strong>${b.data}</strong><br><small>${b.ora}</small></td>
-                    <td>${b.materia}</td>
-                    <td>${b.studente}</td>
-                    <td><a href="https://wa.me/39${b.telefono}" target="_blank" style="color: #25D366; text-decoration: none;"><i class="fa-brands fa-whatsapp"></i> ${b.telefono}</a></td>
-                    <td><small>${b.luogo}</small></td>
-                    <td><span style="color: var(--bordeaux-light); font-weight: 600;">${b.tutor}</span></td>
-                    <td>
-                        <button onclick="editBooking(${b.id})" style="background: none; border: none; color: #3b82f6; cursor: pointer; margin-right: 10px; font-size: 16px;" title="Modifica"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteBooking(${b.id})" style="background: none; border: none; color: #e63946; cursor: pointer; font-size: 16px;" title="Cancella"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-                `;
-            });
-
-            tbody.innerHTML = html;
-        }
-
-        // EDITA PRENOTAZIONE (AREA TUTOR)
-        function editBooking(id) {
-            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-            const b = bookings.find(item => item.id === id);
-            if (!b) return;
-
-            document.getElementById('edit-booking-id').value = b.id;
-            document.getElementById('edit-date').value = b.data;
-            document.getElementById('edit-time').value = b.ora;
-            document.getElementById('edit-subject').value = b.materia;
-            document.getElementById('edit-tutor').value = b.tutor;
-
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        function saveBookingEdit() {
-            const id = parseFloat(document.getElementById('edit-booking-id').value);
-            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-            
-            const index = bookings.findIndex(item => item.id === id);
-            if (index !== -1) {
-                bookings[index].data = document.getElementById('edit-date').value;
-                bookings[index].ora = document.getElementById('edit-time').value;
-                bookings[index].materia = document.getElementById('edit-subject').value;
-                bookings[index].tutor = document.getElementById('edit-tutor').value;
-
-                localStorage.setItem('zetaBookings', JSON.stringify(bookings));
-                alert("Prenotazione aggiornata con successo!");
-                closeEditModal();
-                renderAdminBookings();
-                renderCalendar();
-            }
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-        }
-
-        function deleteBooking(id) {
-            if (confirm("Sei sicuro di voler eliminare questa prenotazione?")) {
-                let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
-                bookings = bookings.filter(b => b.id !== id);
-                localStorage.setItem('zetaBookings', JSON.stringify(bookings));
-                renderAdminBookings();
-                renderCalendar();
-            }
-        }
-
-        function clearAllBookings() {
-            if (confirm("ATTENZIONE: Verranno cancellate TUTTE le prenotazioni registrate. Continuare?")) {
-                localStorage.removeItem('zetaBookings');
-                renderAdminBookings();
-                renderCalendar();
-            }
         }
     </script>
 </body>
