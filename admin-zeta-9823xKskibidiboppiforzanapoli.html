@@ -23,7 +23,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
         body { background-color: var(--black); color: var(--text-light); }
 
-        /* SCHERMATA DI LOGIN BLINDATA */
         #login-overlay {
             position: fixed;
             top: 0;
@@ -73,7 +72,6 @@
         }
         .login-box button:hover { background: var(--bordeaux-light); }
 
-        /* CONTENUTO DASHBOARD (NASTCOSTO DI DEFAULT) */
         #admin-content {
             display: none;
             padding: 30px 5%;
@@ -104,21 +102,19 @@
 </head>
 <body>
 
-<!-- BLOCCO ACCESSO -->
 <div id="login-overlay">
     <div class="login-box">
         <i class="fa-solid fa-user-shield" style="font-size: 48px; color: var(--bordeaux-light);"></i>
         <h2 style="margin-top: 15px;">Area Riservata</h2>
-        <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Inserisci la chiave di sicurezza master.</p>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 5px;">Inserisci la chiave di sicurezza.</p>
         
         <input type="password" id="admin-pass" placeholder="Password Amministratore" onkeypress="if(event.key==='Enter') verificaPassword()">
         <button onclick="verificaPassword()"><i class="fa-solid fa-lock"></i> Sblocca Pannello</button>
         
-        <p id="error-msg" style="color: var(--danger); font-size: 13px; margin-top: 15px; display: none;">Password non corretta!</p>
+        <p id="error-msg" style="color: var(--danger); font-size: 13px; margin-top: 15px; display: none;">Password errata!</p>
     </div>
 </div>
 
-<!-- DASHBOARD GESTIONALE (Si attiva solo dopo autenticazione) -->
 <div id="admin-content">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <h1>Pannello <span>Zeta Tutoring</span></h1>
@@ -132,10 +128,9 @@
         </div>
     </div>
 
-    <!-- SEZIONE CONTABILITÀ -->
     <div class="card" style="border-left: 4px solid var(--green);">
         <h2><i class="fa-solid fa-wallet" style="color: var(--green);"></i> Contabilità & Saldi Studenti</h2>
-        <p style="color: var(--text-muted); font-size: 14px;">Calcolo dinamico in base alle lezioni attive e agli sconti a scaglione.</p>
+        <p style="color: var(--text-muted); font-size: 14px;">Calcolo dinamico in base alle lezioni attive e agli sconti.</p>
 
         <table>
             <thead>
@@ -152,10 +147,9 @@
         </table>
     </div>
 
-    <!-- SEZIONE SINGOLE LEZIONI -->
     <div class="card">
         <h2><i class="fa-solid fa-list-check"></i> Registro Singole Lezioni</h2>
-        <p style="color: var(--text-muted); font-size: 14px;">L'eliminazione di una lezione aggiorna immediatamente il saldo totale.</p>
+        <p style="color: var(--text-muted); font-size: 14px;">L'eliminazione aggiorna immediatamente i calcoli.</p>
 
         <table>
             <thead>
@@ -178,23 +172,25 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxocGRheHdrbWRnZWtxc2NmY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjgxNDIsImV4cCI6MjEwNjk0NDE0Mn0.02iLZCaOTSDSvr0DXZ3Tvb5KPEvYS8tNLg52N7iKcAM";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // HASH SHA-256 DELLA PASSWORD "ZetaTutoring2026!Pisa"
-    // Nota: Nessuno può risalire alla password leggendo questa stringa.
-    const PASSWORD_HASH = "81c3c97db378619bc30d4a974950aa0627d3b0709b1f7bb3ff2010eaefed56fb";
+    // Password codificata in memoria: ZetaTutoring2026!Pisa
+    const SECRET_KEY = [90, 101, 116, 97, 84, 117, 116, 111, 114, 105, 110, 103, 50, 48, 50, 54, 33, 80, 105, 115, 97];
 
-    async function hashString(str) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(str);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+    function verificaPassword() {
+        const input = document.getElementById('admin-pass').value.trim();
+        
+        let corretta = true;
+        if (input.length !== SECRET_KEY.length) {
+            corretta = false;
+        } else {
+            for (let i = 0; i < input.length; i++) {
+                if (input.charCodeAt(i) !== SECRET_KEY[i]) {
+                    corretta = false;
+                    break;
+                }
+            }
+        }
 
-    async function verificaPassword() {
-        const inputPass = document.getElementById('admin-pass').value;
-        const inputHash = await hashString(inputPass);
-
-        if (inputHash === PASSWORD_HASH) {
+        if (corretta) {
             sessionStorage.setItem('zeta_admin_auth', 'true');
             sbloccaDashboard();
         } else {
@@ -214,7 +210,6 @@
         window.location.reload();
     }
 
-    // Verifica la sessione all'apertura della pagina
     window.onload = function() {
         if (sessionStorage.getItem('zeta_admin_auth') === 'true') {
             sbloccaDashboard();
