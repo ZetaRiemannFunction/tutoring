@@ -266,6 +266,7 @@
             .form-container { padding: 25px 18px; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -783,7 +784,7 @@
         }
 
         // INVIO PRENOTAZIONE
-        function submitBooking() {
+        async function submitBooking() {
             if (selectedSlots.length === 0) {
                 alert("Seleziona almeno una lezione dal calendario prima di proseguire.");
                 return;
@@ -793,69 +794,36 @@
             const subject = document.getElementById('book-subject').value;
             const lessonType = document.getElementById('book-type').value;
             const tutor = document.querySelector('input[name="teacher"]:checked').value;
-            const priceText = document.getElementById('price-estimate').innerText;
 
-            let bookings = JSON.parse(localStorage.getItem('zetaBookings')) || [];
+            // Preparazione oggetti da inviare a Supabase
+            const nuovePrenotazioni = selectedSlots.map(slot => ({
+                studente: currentUser.name,
+                telefono: currentUser.phone,
+                materia: subject,
+                data: slot.data,
+                ora: slot.ora,
+                luogo: location === 'online' ? 'Online (Meet)' : 'Presenza (Via Giusti 18, Pisa)',
+                tutor: tutor,
+                tipo_scuola: currentUser.type
+            }));
 
-            // Verifica collisioni
-            const conflitto = selectedSlots.some(slot => 
-                bookings.some(b => b.tutor === tutor && b.data === slot.data && b.ora === slot.ora)
-            );
+            // Salvataggio nel Cloud
+            const { data, error } = await supabaseClient
+                .from('prenotazioni')
+                .insert(nuovePrenotazioni);
 
-            if (conflitto) {
-                alert("Uno o più orari selezionati sono stati appena occupati. Il calendario verrà aggiornato.");
-                renderCalendar();
+            if (error) {
+                alert("Errore nel salvataggio online: " + error.message);
                 return;
             }
 
-            // Registra le lezioni nel sistema
-            selectedSlots.forEach(slot => {
-                bookings.push({
-                    id: Date.now() + Math.random(),
-                    studente: currentUser.name,
-                    telefono: currentUser.phone,
-                    materia: subject,
-                    data: slot.data,
-                    ora: slot.ora,
-                    ore: 1,
-                    tipo: lessonType,
-                    luogo: location === 'online' ? 'Online (Meet)' : 'Presenza (Via Giusti 18, Pisa)',
-                    tutor: tutor,
-                    prezzo: priceText
-                });
-            });
-
-            localStorage.setItem('zetaBookings', JSON.stringify(bookings));
-
-            let dateListHtml = selectedSlots.map(s => `<li><strong>${s.data}</strong> alle ore <strong>${s.ora}</strong></li>`).join('');
-
-            let resHtml = `
-                <strong>Prenotazione Convalidata!</strong><br>
-                <strong>Tutor Scelto:</strong> ${tutor}<br>
-                <strong>Materia & Tipo:</strong> ${subject} (${lessonType})<br>
-                <strong>Totale Lezioni Prenotate:</strong> ${selectedSlots.length} ore<br>
-                <strong>Elenco Date:</strong>
-                <ul style="margin-left: 20px; margin-top: 5px; margin-bottom: 5px;">${dateListHtml}</ul>
-                <strong>Sede/Modalità:</strong> ${location === 'online' ? 'Online' : 'Presenza (Via Giusti 18, Pisa)'}<br>
-                <strong>Importo Totale:</strong> ${priceText}
-            `;
-
-            document.getElementById('result-text').innerHTML = resHtml;
-            
-            const meetBtn = document.getElementById('meet-btn');
-            if (location === 'online') {
-                const meetUrl = tutor.includes("Yuri Santoro") ? "https://meet.google.com/yuri-math-zeta" : "https://meet.google.com/elia-physics-zeta";
-                meetBtn.href = meetUrl;
-                meetBtn.classList.remove('hidden');
-            } else {
-                meetBtn.classList.add('hidden');
-            }
-
-            document.getElementById('booking-result').classList.remove('hidden');
-
-            resetSlotSelection();
-            renderCalendar();
-        }
+    alert("Prenotazione salvata con successo!");
+    resetSlotSelection();
+    renderCalendar();
+}
+    const SUPABASE_URL = "https://lhpdaxwkmdgekqscfcaa.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxocGRheHdrbWRnZWtxc2NmY2FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzNjgxNDIsImV4cCI6MjEwNjk0NDE0Mn0.02iLZCaOTSDSvr0DXZ3Tvb5KPEvYS8tNLg52N7iKcAM";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     </script>
 </body>
 </html>
