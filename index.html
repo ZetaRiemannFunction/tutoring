@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeta Tutoring | Matematica e Fisica</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bordeaux: #800020;
+            --bordeaux-light: #a31535;
+            --black: #0d0d0d;
+            --dark-gray: #1a1a1a;
+            --text-light: #f4f4f4;
+            --text-muted: #aaaaaa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { background-color: var(--black); color: var(--text-light); line-height: 1.6; }
+
+        /* Header & Nav */
+        header { background-color: var(--dark-gray); padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bordeaux); position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 28px; font-weight: 700; color: var(--bordeaux-light); font-family: serif; font-style: italic; display: flex; align-items: center; gap: 10px;}
+        .logo span { font-family: 'Poppins', sans-serif; font-style: normal; font-size: 22px; color: var(--text-light); }
+        nav gap { display: flex; gap: 20px; }
+        nav a { color: var(--text-light); text-decoration: none; font-weight: 600; transition: color 0.3s; cursor: pointer; margin-left: 15px;}
+        nav a:hover { color: var(--bordeaux-light); }
+
+        /* sezioni */
+        section { padding: 60px 5%; max-width: 1200px; margin: 0 auto; }
+        h1, h2 { color: var(--bordeaux-light); margin-bottom: 20px; }
+        .hero { text-align: center; padding: 100px 20px; background: linear-gradient(to bottom, var(--dark-gray), var(--black)); border-radius: 10px; margin-top: 20px; }
+        .hero h1 { font-size: 48px; color: var(--text-light); }
+        .hero h1 span { color: var(--bordeaux-light); }
+        .hero p { font-size: 20px; color: var(--text-muted); max-width: 800px; margin: 0 auto 30px auto; }
+        
+        /* Bottoni */
+        .btn { background-color: var(--bordeaux); color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn:hover { background-color: var(--bordeaux-light); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid var(--bordeaux); }
+        .btn-outline:hover { background: var(--bordeaux); }
+
+        /* Card Chi Siamo */
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; }
+        .team-card { background-color: var(--dark-gray); padding: 30px; border-radius: 15px; text-align: center; border-top: 4px solid var(--bordeaux); }
+        .team-card i { font-size: 50px; color: var(--bordeaux-light); margin-bottom: 15px; }
+
+        /* Form e Input */
+        .form-container { background-color: var(--dark-gray); padding: 40px; border-radius: 15px; max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-muted); }
+        input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background-color: var(--black); color: white; font-size: 16px; }
+        input:focus, select:focus { outline: none; border-color: var(--bordeaux-light); }
+        
+        /* Auth Modal */
+        #auth-section { display: block; }
+        #booking-section { display: none; }
+        .hidden { display: none !important; }
+
+        /* Tariffe */
+        .tariffe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .tariffa-card { background: var(--dark-gray); padding: 20px; border-radius: 10px; text-align: center; }
+        .tariffa-card h3 { color: var(--bordeaux-light); }
+        .prezzo { font-size: 28px; font-weight: bold; margin: 10px 0; }
+
+        /* Contatti */
+        .contact-links { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+        .whatsapp-btn { background-color: #25D366; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .whatsapp-btn:hover { background-color: #1ebe5d; }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        hr { border: 0; height: 1px; background: #333; margin: 40px 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">ζ(s) <span>ZetaTutoring</span></div>
+        <nav>
+            <a href="#chi-siamo">Chi Siamo</a>
+            <a href="#tariffe">Tariffe</a>
+            <a href="#prenota" class="btn" style="padding: 8px 15px;">Prenota ora</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Il tuo successo in <span>Matematica e Fisica</span></h1>
+        <p>Due studenti, tre percorsi, una sola missione: aiutarti a raggiungere i tuoi obiettivi.</p>
+        <div style="display: flex; gap: 15px; justify-content: center;">
+            <a href="#prenota" class="btn">Prenota una lezione</a>
+            <a href="#tariffe" class="btn btn-outline">Scopri le Tariffe</a>
+        </div>
+    </section>
+
+    <section id="chi-siamo">
+        <div class="text-center">
+            <h2>Chi Siamo</h2>
+            <p style="font-size: 18px; max-width: 800px; margin: 0 auto;">
+                Siamo due studenti universitari laureati all'Università di Pisa. Siamo due amici che hanno scelto di unire le proprie competenze per offrire un metodo di studio efficace, chiaro e su misura per te. Insegniamo entrambi Matematica e Fisica.
+            </p>
+        </div>
+
+        <div class="team-grid">
+            <div class="team-card">
+                <!-- Sostituisci con tag <img> quando avrai le foto -->
+                <i class="fa-solid fa-atom"></i>
+                <h3>Elia Masini Martelli</h3>
+                <p>Laurea Triennale in Fisica (UniPi)</p>
+                <p class="text-muted">Studente Magistrale in Fisica.</p>
+                <a href="https://wa.me/393389722620" class="whatsapp-btn" style="justify-content: center; margin-top: 15px;"><i class="fa-brands fa-whatsapp"></i> Contatta Elia</a>
+            </div>
+            <div class="team-card">
+                <i class="fa-solid fa-calculator"></i>
+                <h3>Yuri Santoro</h3>
+                <p>Laurea Triennale in Matematica (UniPi)</p>
+                <p class="text-muted">Studente Magistrale in Matematica.</p>
+                <a href="https://wa.me/393336104432" class="whatsapp-btn" style="justify-content: center; margin-top: 15px;"><i class="fa-brands fa-whatsapp"></i> Contatta Yuri</a>
+            </div>
+        </div>
+        
+        <div class="text-center" style="margin-top: 40px; color: var(--text-muted);">
+            <p><i class="fa-solid fa-location-dot"></i> <strong>Sede:</strong> Via Giuseppe Giusti 18, Pisa (PI) 56127</p>
+            <p><i class="fa-solid fa-laptop"></i> Disponibili anche per lezioni <strong>Online</strong> (Google Meet / Teams)</p>
+        </div>
+    </section>
+
+    <section id="tariffe">
+        <h2 class="text-center">Le Nostre Tariffe</h2>
+        <p class="text-center text-muted">Trasparenza e flessibilità. Pagamento anticipato o volta per volta.</p>
+        <div class="tariffe-grid" style="margin-top: 30px;">
+            <div class="tariffa-card">
+                <h3>Liceo Scientifico</h3>
+                <div class="prezzo">25€ <span style="font-size: 16px; font-weight: normal;">/ ora</span></div>
+                <p>Lezione singola individuale</p>
+            </div>
+            <div class="tariffa-card">
+                <h3>Altri Indirizzi</h3>
+                <div class="prezzo">20€ <span style="font-size: 16px; font-weight: normal;">/ ora</span></div>
+                <p>Tecnici, Professionali, Licei NON scientifici, Medie</p>
+            </div>
+            <div class="tariffa-card">
+                <h3>Lezione di Gruppo</h3>
+                <div class="prezzo">18€ <span style="font-size: 16px; font-weight: normal;">/ ora</span></div>
+                <p>Per persona. Max 2-3 persone.</p>
+            </div>
+        </div>
+
+        <div class="form-container" style="margin-top: 30px; text-align: center; border: 1px solid var(--bordeaux);">
+            <h3 style="color: var(--bordeaux-light);">Pacchetti Convenienza</h3>
+            <p>Prenota più ore in anticipo e risparmia!</p>
+            <ul style="list-style: none; margin-top: 15px;">
+                <li>Da <strong>10 a 14 ore</strong>: Sconto del <strong>15%</strong></li>
+                <li>Da <strong>15 a 19 ore</strong>: Sconto del <strong>15%</strong></li>
+                <li><strong>20 ore o più</strong>: Sconto del <strong>20%</strong></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="prenota">
+        <h2 class="text-center">Area Studenti</h2>
+        
+        <!-- SEZIONE LOGIN/REGISTRAZIONE -->
+        <div id="auth-section" class="form-container">
+            <h3 class="text-center">Accedi o Registrati</h3>
+            <p class="text-center text-muted" style="margin-bottom: 20px;">Inserisci il tuo numero e il PIN per continuare</p>
+            
+            <div class="form-group">
+                <label>Numero di Telefono *</label>
+                <input type="tel" id="user-phone" placeholder="Es. 3381234567" required>
+            </div>
+            <div class="form-group">
+                <label>PIN Segreto *</label>
+                <input type="password" id="user-pin" placeholder="Inserisci il PIN fornito" required>
+            </div>
+
+            <!-- Dati aggiuntivi (mostrati se è un nuovo utente) -->
+            <div id="register-fields" class="hidden">
+                <hr>
+                <p style="color: var(--bordeaux-light); margin-bottom: 10px;">Primo accesso? Completa il profilo:</p>
+                <div class="form-group">
+                    <label>Nome e Cognome *</label>
+                    <input type="text" id="user-name" placeholder="Mario Rossi">
+                </div>
+                <div class="form-group">
+                    <label>Grado Scolastico *</label>
+                    <select id="user-school">
+                        <option value="medie">Scuola Media</option>
+                        <option value="superiori" selected>Scuola Superiore</option>
+                        <option value="universita">Università</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tipologia (Solo Superiori)</label>
+                    <select id="user-type">
+                        <option value="scientifico">Liceo Scientifico</option>
+                        <option value="altro">Altro Liceo / Tecnico / Professionale</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Anno in corso</label>
+                    <input type="number" id="user-year" min="1" max="5" value="1">
+                </div>
+            </div>
+
+            <button class="btn" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Entra / Conferma</button>
+        </div>
+
+        <!-- SEZIONE PRENOTAZIONE (Visibile solo dopo il login) -->
+        <div id="booking-section" class="form-container hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin:0;">Prenota Lezione</h3>
+                <button class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="logout()">Esci</button>
+            </div>
+
+            <div class="form-group">
+                <label>Materia</label>
+                <select id="book-subject">
+                    <option value="Matematica">Matematica</option>
+                    <option value="Fisica">Fisica</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Tipologia Lezione</label>
+                <select id="book-type" onchange="updatePriceEstimate()">
+                    <option value="singola">Individuale</option>
+                    <option value="gruppo">Gruppo (2-3 persone)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Luogo della lezione</label>
+                <select id="book-location">
+                    <option value="pisa">In Presenza (Via G. Giusti 18, Pisa)</option>
+                    <option value="online">Online (Riceverai link Meet)</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="book-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Ora inizio (10:00 - 20:00)</label>
+                    <input type="time" id="book-time" min="10:00" max="20:00" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Quante ore vuoi prenotare?</label>
+                <input type="number" id="book-hours" min="1" max="20" value="1" onchange="updatePriceEstimate()">
+            </div>
+
+            <div style="background: var(--black); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--bordeaux-light);">
+                <strong>Preventivo stimato:</strong> <span id="price-estimate" style="font-size: 20px; font-weight: bold; color: var(--text-light);">-- €</span>
+            </div>
+
+            <button class="btn" style="width: 100%;" onclick="submitBooking()">Conferma Prenotazione</button>
+
+            <!-- Risultato prenotazione -->
+            <div id="booking-result" class="hidden" style="margin-top: 20px; padding: 20px; background: #1a3a1a; border: 1px solid #2ecc71; border-radius: 8px;">
+                <h4 style="color: #2ecc71;"><i class="fa-solid fa-check-circle"></i> Prenotazione Confermata!</h4>
+                <p style="margin-top: 10px;" id="result-text"></p>
+                <a href="#" id="meet-link" class="btn hidden" target="_blank" style="background: #2581cf; width: 100%; text-align: center; margin-top: 15px;"><i class="fa-solid fa-video"></i> Entra nell'Aula Virtuale</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Script per la logica -->
+    <script>
+        const SECRET_PIN = "531002";
+        let currentUser = null;
+
+        // Gestione Login / Registrazione
+        function handleLogin() {
+            const phone = document.getElementById('user-phone').value;
+            const pin = document.getElementById('user-pin').value;
+
+            if(!phone || !pin) {
+                alert("Inserisci telefono e PIN.");
+                return;
+            }
+
+            if(pin !== SECRET_PIN) {
+                alert("PIN errato. Riprova.");
+                return;
+            }
+
+            // Simulazione Database con LocalStorage
+            let users = JSON.parse(localStorage.getItem('zetaUsers')) || {};
+            
+            if(users[phone]) {
+                // Utente esiste, loggalo
+                currentUser = users[phone];
+                showBookingArea();
+            } else {
+                // Nuovo utente: mostra campi extra
+                const registerFields = document.getElementById('register-fields');
+                if(registerFields.classList.contains('hidden')) {
+                    registerFields.classList.remove('hidden');
+                    alert("Primo accesso. Completa i tuoi dati per registrarti.");
+                } else {
+                    // Salva nuovo utente
+                    const name = document.getElementById('user-name').value;
+                    const school = document.getElementById('user-school').value;
+                    const type = document.getElementById('user-type').value;
+                    const year = document.getElementById('user-year').value;
+
+                    if(!name) { alert("Inserisci Nome e Cognome."); return; }
+
+                    currentUser = { phone, name, school, type, year };
+                    users[phone] = currentUser;
+                    localStorage.setItem('zetaUsers', JSON.stringify(users));
+                    showBookingArea();
+                }
+            }
+        }
+
+        function showBookingArea() {
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('booking-section').classList.remove('hidden');
+            updatePriceEstimate();
+            
+            // Imposta data minima a oggi
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('book-date').setAttribute('min', today);
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('user-phone').value = '';
+            document.getElementById('user-pin').value = '';
+            document.getElementById('register-fields').classList.add('hidden');
+            document.getElementById('booking-section').classList.add('hidden');
+            document.getElementById('auth-section').classList.remove('hidden');
+            document.getElementById('booking-result').classList.add('hidden');
+        }
+
+        // Calcolo Tariffa
+        function updatePriceEstimate() {
+            if(!currentUser) return;
+            
+            const ore = parseInt(document.getElementById('book-hours').value) || 1;
+            const tipoLezione = document.getElementById('book-type').value;
+            const tipoScuola = currentUser.type; // 'scientifico' o 'altro'
+            
+            let costoOrario = 20; // Default
+            
+            if(tipoLezione === 'gruppo') {
+                costoOrario = 18;
+            } else if (tipoScuola === 'scientifico') {
+                costoOrario = 25;
+            }
+
+            let totale = costoOrario * ore;
+
+            // Logica Sconti
+            let scontoApplicato = 0;
+            if(ore >= 20) {
+                totale = totale * 0.80;
+                scontoApplicato = 20;
+            } else if(ore >= 10) {
+                totale = totale * 0.85;
+                scontoApplicato = 15;
+            }
+
+            let text = `${totale.toFixed(2)} €`;
+            if(scontoApplicato > 0) text += ` (Sconto ${scontoApplicato}% applicato!)`;
+
+            document.getElementById('price-estimate').innerText = text;
+        }
+
+        // Gestione Assegnazione Tutor e Disponibilità
+        function submitBooking() {
+            const dateStr = document.getElementById('book-date').value;
+            const timeStr = document.getElementById('book-time').value;
+            const hours = document.getElementById('book-hours').value;
+            const location = document.getElementById('book-location').value;
+            const subject = document.getElementById('book-subject').value;
+
+            if(!dateStr || !timeStr) {
+                alert("Scegli una data e un orario.");
+                return;
+            }
+
+            const dateObj = new Date(dateStr);
+            const dayOfWeek = dateObj.getDay(); // 0=Sun, 1=Mon...
+            const hour = parseInt(timeStr.split(':')[0]);
+
+            if(hour < 10 || hour >= 20) {
+                alert("L'orario deve essere compreso tra le 10:00 e le 20:00.");
+                return;
+            }
+
+            // Logica Disponibilità:
+            // Yuri: Sempre (10-20)
+            // Elia: Lun(10-16), Mar(13-20), Mer(10-16), Gio(11-20), Ven(11-16)
+            let eliaLibero = false;
+            if(dayOfWeek === 1 && hour >= 10 && hour < 16) eliaLibero = true;
+            if(dayOfWeek === 2 && hour >= 13 && hour < 20) eliaLibero = true;
+            if(dayOfWeek === 3 && hour >= 10 && hour < 16) eliaLibero = true;
+            if(dayOfWeek === 4 && hour >= 11 && hour < 20) eliaLibero = true;
+            if(dayOfWeek === 5 && hour >= 11 && hour < 16) eliaLibero = true;
+
+            // Simuliamo assegnazione. Se Elia è libero c'è il 50% di probabilità che tocchi a lui, altrimenti Yuri.
+            let tutorAssegnato = "Yuri Santoro";
+            if(eliaLibero && Math.random() > 0.5) tutorAssegnato = "Elia Masini Martelli";
+
+            // Costruiamo messaggio
+            let resultHtml = `<strong>Tutor assegnato:</strong> ${tutorAssegnato}<br>
+                              <strong>Materia:</strong> ${subject}<br>
+                              <strong>Data:</strong> ${dateStr} alle ${timeStr} (${hours} ore)`;
+            
+            const meetBtn = document.getElementById('meet-link');
+            if(location === 'online') {
+                resultHtml += `<br><br><em>Lezione Online selezionata. Clicca il pulsante qui sotto per accedere all'aula al momento della lezione.</em>`;
+                meetBtn.href = "https://meet.google.com/new"; // In produzione, qui si genera un link dinamico API.
+                meetBtn.classList.remove('hidden');
+            } else {
+                resultHtml += `<br><br><strong>Luogo:</strong> Via G. Giusti 18, Pisa`;
+                meetBtn.classList.add('hidden');
+            }
+
+            document.getElementById('result-text').innerHTML = resultHtml;
+            document.getElementById('booking-result').classList.remove('hidden');
+
+            // Qui in futuro puoi inviare i dati ad un database reale (es. Firebase o SheetDB) per aggiornare il TUO calendario personale.
+        }
+    </script>
+</body>
+</html>
